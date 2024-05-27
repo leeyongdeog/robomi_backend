@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot' version '2.7.0'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+}
+
+group = 'com.robomi'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.56'
+    implementation 'javax.websocket:javax.websocket-api:1.1'
+    implementation 'org.glassfish.tyrus:tyrus-server:1.17'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
