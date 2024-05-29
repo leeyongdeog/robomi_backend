@@ -6,7 +6,7 @@
   </component>
   <component name="DBNavigator.Project.DataEditorManager">
     <record-view-column-sorting-type value="BY_INDEX" />
-    <value-preview-text-wrapping value="true" />
+    <value-preview-text-wrapping value="false" />
     <value-preview-pinned value="false" />
   </component>
   <component name="DBNavigator.Project.DatabaseBrowserManager">
@@ -21,30 +21,30 @@
 
 show tables;
 
-create table manager(
-seq INT(11) NOT NULL AUTO_INCREMENT,
-name VARCHAR(20) NOT NULL,
-imgPath VARCHAR(255) NOT NULL,
-createDate DATETIME,
-updateDate DATETIME,
-CONSTRAINT manager_PK PRIMARY KEY(seq)
-);
-
 select * from manager;
 select * from objects;
 select * from capture;
 select * from weights;
 
+select * from manager_entity;
 
-alter table objects add status INT(10) NOT NULL;
-alter table manager add type INT(10) NOT NULL;]]></console>
+insert into manager(name,imgPath,createDate,updateDate,type) values ('관리자','http://','2024-05-01 00:00:00','2024-05-01 00:00:00',2);
+
+insert into objects(name,imgPath,display,createDate,updateDate,status) values ('물건5','http://',0,'2024-05-01 00:00:00','2024-05-01 00:00:00',0);
+insert into capture(name,imgPath,status,updateDate) values ('물건1','http://',3,'2024-05-01 00:00:00');
+
+drop table capture_entity;
+
+SHOW GRANTS FOR 'admin'@'%';]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="161af77c-d120-428e-9f81-4b79479506bd" object-ref="consoles/robomidb" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="161af77c-d120-428e-9f81-4b79479506bd" />
@@ -71,7 +71,7 @@ alter table manager add type INT(10) NOT NULL;]]></console>
           <url-type value="DATABASE" />
           <host value="robomidb.c5kcq80emm6y.ap-northeast-2.rds.amazonaws.com" />
           <port value="3306" />
-          <database value="mysql" />
+          <database value="robomidb" />
           <tns-folder value="" />
           <tns-profile value="" />
           <type value="USER_PASSWORD" />

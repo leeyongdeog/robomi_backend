@@ -17,6 +17,7 @@ public class ManagerService {
 
     public List<ManagerDTO> getAllManagers(){
         List<ManagerEntity> managers = managerRepo.findAll();
+        System.out.println("Managers: " + managers);
         return managers.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 

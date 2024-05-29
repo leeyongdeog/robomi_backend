@@ -18,17 +18,22 @@ public class CaptureService {
         List<CaptureEntity> entities = captureRepo.findAll();
         return entities.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-    public List<CaptureDTO> getWarningCaptures(){
-        List<CaptureEntity> entities = captureRepo.findWarningCaptures();
-        return entities.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-    public List<CaptureDTO> getCapturesByName(String name){
-        List<CaptureEntity> entities = captureRepo.findCapturesByName(name);
-        return entities.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
+//    public List<CaptureDTO> getWarningCaptures(){
+//        List<CaptureEntity> entities = captureRepo.findWarningCaptures();
+//        return entities.stream().map(this::convertToDTO).collect(Collectors.toList());
+//    }
+//    public List<CaptureDTO> getCapturesByName(String name){
+//        List<CaptureEntity> entities = captureRepo.findCapturesByName(name);
+//        return entities.stream().map(this::convertToDTO).collect(Collectors.toList());
+//    }
 
     private CaptureDTO convertToDTO(CaptureEntity ent){
         CaptureDTO dto = new CaptureDTO();
+        dto.setSeq(ent.getSeq());
+        dto.setName(ent.getName());
+        dto.setStatus(ent.getStatus());
+        dto.setImgPath(ent.getImgPath());
+        dto.setUpdateDate(ent.getUpdateDate());
 
         return dto;
     }
