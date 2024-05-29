@@ -15,14 +15,13 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'mysql:mysql-connector-java'
+    implementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.56'
-    implementation 'javax.websocket:javax.websocket-api:1.1'
-    implementation 'org.glassfish.tyrus:tyrus-server:1.17'
-
-    testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }
 
 test {
