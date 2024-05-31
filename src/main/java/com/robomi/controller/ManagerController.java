@@ -3,10 +3,10 @@ package com.robomi.controller;
 import com.robomi.dto.ManagerDTO;
 import com.robomi.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,5 +23,16 @@ public class ManagerController {
     @GetMapping("/adminManagers")
     public List<ManagerDTO> getAdminManagers(){
         return managerService.getAdminManagers();
+    }
+
+    @PostMapping("/addManager")
+    public void addManager(@RequestParam("img")MultipartFile file, @RequestParam("name") String name) throws IOException{
+        if(file.isEmpty()){
+            throw new IllegalArgumentException("File is Empty.");
+        }
+
+        String imgUrl = managerService.uploadImageToS3(file);
+
+        managerService.addManager(name, imgUrl);
     }
 }
