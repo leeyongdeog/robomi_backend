@@ -21,8 +21,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.30' // Lombok 버전 1.18.30으로 수정
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    implementation group: 'org.openpnp', name: 'opencv', version: '4.9.0-0'
 }
 
 test {
