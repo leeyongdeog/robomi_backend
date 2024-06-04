@@ -2,11 +2,13 @@ package com.robomi.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class CaptureDTO {
     private Long seq;
     private String name;
-    private String imgPath;
+    private String img_path;
     private Long status;
-    private String updateDate;
+    private LocalDateTime update_date;
 }

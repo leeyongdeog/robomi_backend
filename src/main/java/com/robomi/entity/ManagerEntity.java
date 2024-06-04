@@ -1,7 +1,7 @@
 package com.robomi.entity;
 
 import lombok.Data;
-
+import java.time.LocalDateTime;
 import javax.persistence.*;
 
 @Entity
@@ -12,8 +12,8 @@ public class ManagerEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long seq;
     private String name;
-    private String imgPath;
-    private String createDate;
-    private String updateDate;
+    private String img_path;
+    private LocalDateTime create_date;
+    private LocalDateTime update_date;
     private Long type;
 }

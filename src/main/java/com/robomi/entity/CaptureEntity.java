@@ -1,7 +1,7 @@
 package com.robomi.entity;
 
 import lombok.Data;
-
+import java.time.LocalDateTime;
 import javax.persistence.*;
 
 @Entity
@@ -12,7 +12,7 @@ public class CaptureEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long seq;
     private String name;
-    private String imgPath;
+    private String img_path;
     private Long status;
-    private String updateDate;
+    private LocalDateTime update_date;
 }
