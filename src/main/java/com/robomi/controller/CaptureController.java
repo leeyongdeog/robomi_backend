@@ -21,13 +21,13 @@ public class CaptureController {
         return captureService.getAllCaptures();
     }
 
-//    @GetMapping("/warningCaptures")
-//    public List<CaptureDTO> getWarningCaptures(){
-//        return captureService.getWarningCaptures();
-//    }
-//
-//    @GetMapping("/capturesByName/{name}")
-//    public List<CaptureDTO> getCapturesByName(@PathVariable String name){
-//        return captureService.getCapturesByName(name);
-//    }
+    @GetMapping("/warningCaptures")
+    public List<CaptureDTO> getWarningCaptures(){
+        return captureService.getWarningCaptures();
+    }
+
+    @GetMapping("/capturesByName/{name}")
+    public List<CaptureDTO> getCapturesByName(@PathVariable String name){
+        return captureService.getCapturesByName(name);
+    }
 }

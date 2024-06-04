@@ -34,6 +34,11 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
     implementation 'org.apache.logging.log4j:log4j-1.2-api'
     testImplementation platform('org.junit:junit-bom:5.10.0')
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.glassfish.tyrus.bundles:tyrus-standalone-client:1.17'
+    implementation "org.bytedeco:javacv-platform:1.5.10"
+//    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.7'
 }
 
 

@@ -35,10 +35,9 @@ public class ManagerService {
         managerDTO.setSeq(manager.getSeq());
         managerDTO.setName(manager.getName());
         managerDTO.setType(manager.getType());
-        managerDTO.setImgPath(manager.getImgPath());
-        managerDTO.setCreateDate(manager.getCreateDate());
-        managerDTO.setUpdateDate(manager.getUpdateDate());
-
+        managerDTO.setImg_path(manager.getImg_path());
+        managerDTO.setCreate_date(manager.getCreate_date());
+        managerDTO.setUpdate_date(manager.getUpdate_date());
         return managerDTO;
     }
 
@@ -46,11 +45,13 @@ public class ManagerService {
         String keyName = UUID.randomUUID().toString();
         String folderName = "manager";
         String S3BucketName = "robomi-storage";
+        String region = "ap-northeast-2";
 
 
         S3Uploader.uploadFile(S3BucketName, folderName, keyName, file);
 
-        String imgUrl = "s3://" + S3BucketName + "/" + folderName + "/" + keyName + ".jpg";
+//        https://robomi-storage.s3.ap-northeast-2.amazonaws.com/manager/44b8bdf3-22f0-4aab-8a7e-fc447c9ed86f.jpg
+        String imgUrl = "https://" + S3BucketName + ".s3." + region + ".amazonaws.com/" +folderName + "/" + keyName + ".jpg";
         System.out.println(imgUrl);
         return imgUrl;
     }
@@ -59,16 +60,14 @@ public class ManagerService {
         ManagerEntity entity = new ManagerEntity();
         System.out.println(name + "/" + imgUrl);
         entity.setName(name);
-        entity.setImgPath(imgUrl);
+        entity.setImg_path(imgUrl);
         entity.setType(1l);
 
         LocalDateTime currentTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String strTime = currentTime.format(formatter);
 
-        entity.setCreateDate(strTime);
-        entity.setUpdateDate(strTime);
-
+        entity.setUpdate_date(currentTime);
+        entity.setCreate_date(currentTime);
+        System.out.println("/" + entity);
         managerRepo.save(entity);
     }
 }

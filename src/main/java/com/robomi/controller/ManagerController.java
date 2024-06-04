@@ -32,7 +32,7 @@ public class ManagerController {
         }
 
         String imgUrl = managerService.uploadImageToS3(file);
-
+        System.out.println("------------"+name + "/" + imgUrl);
         managerService.addManager(name, imgUrl);
     }
 }

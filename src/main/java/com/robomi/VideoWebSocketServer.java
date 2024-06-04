@@ -25,12 +25,15 @@ public class VideoWebSocketServer {
         this.session = session;
         sessions.add(session);
         clients.add(this);
+        System.out.println("---- Open WebSocket -- "+ session);
+        System.out.println("Add Client Session -- "+ session);
     }
 
     @OnClose
     public void onClose(){
         clients.remove(this);
         sessions.remove(this.session);
+        System.out.println("---- Close WebSocket -- "+ session);
     }
 
     @OnMessage
@@ -46,6 +49,7 @@ public class VideoWebSocketServer {
     }
 
     public static void startVideoStreaming() throws IOException, InterruptedException{
+        System.out.println("---- Start Video Streaming by WebSocket -- ");
         while(!clients.isEmpty()){
             byte[] frameData = getVideoFrame();
             for(VideoWebSocketServer client : clients){
@@ -56,6 +60,7 @@ public class VideoWebSocketServer {
     }
 
     public static void stopVideoStreaming() throws IOException{
+        System.out.println("---- Stop Video Streaming by WebSocket -- ");
         for (Session session : sessions) {
             if (session.isOpen()) {
                 session.close();
