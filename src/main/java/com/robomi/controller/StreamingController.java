@@ -1,17 +1,21 @@
 package com.robomi.controller;
 
+import com.robomi.AudioWebSocketHandler;
 import com.robomi.VideoWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/streaming")
-public class VideoStreamingController {
+public class StreamingController {
     @Autowired
     private VideoWebSocketHandler videoWebSocketHandler;
+
+    @Autowired
+    private AudioWebSocketHandler audioWebSocketHandler;
+
     @GetMapping("/startVideoWebsocket")
     public String startVideoWebsocket(){
         try{
@@ -41,6 +45,28 @@ public class VideoStreamingController {
             return 1;
         } catch (Exception e){
             return 0;
+        }
+    }
+
+    @GetMapping("/startAudioWebsocket")
+    public String startAudioWebsocket(){
+        try{
+//            audioWebSocketHandler.startAudioStreaming();
+            return "Audio Websocket started";
+        } catch(Exception e){
+            e.printStackTrace();
+            return "Failed Audio Websocket started: " + e.getMessage();
+        }
+    }
+
+    @GetMapping("/stopAudioWebsocket")
+    public String stopAudioWebsocket(){
+        try{
+//            audioWebSocketHandler.stopAudioStreaming();
+            return "Audio Websocket stoped";
+        } catch(Exception e){
+            e.printStackTrace();
+            return "Failed Audio Websocket stoped: " + e.getMessage();
         }
     }
 }

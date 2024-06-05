@@ -2,11 +2,9 @@ package com.robomi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -15,7 +13,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -71,20 +68,20 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
         sessions.add(session);
-        System.out.println("New WebSocket connection: " + session.getId());
+        System.out.println("New Video WebSocket connection: " + session.getId());
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session);
-        System.out.println("WebSocket connection closed: " + session.getId());
+        System.out.println("Video WebSocket connection closed: " + session.getId());
         super.afterConnectionClosed(session, status);
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         super.handleTextMessage(session, message);
-        System.out.println("Received message: " + message.getPayload());
+        System.out.println("Video Received message: " + message.getPayload());
     }
 
     public void sendVideoFrame(int index, byte[] frameData) throws Exception{
