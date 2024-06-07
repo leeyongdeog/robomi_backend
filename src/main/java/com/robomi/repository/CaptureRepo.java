@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface CaptureRepo extends JpaRepository<CaptureEntity, Long> {
-    @Query("SELECT c FROM CaptureEntity c WHERE c.status != 0")
+    @Query("SELECT c FROM CaptureEntity c WHERE c.status != 0 ORDER BY c.update_date DESC")
     List<CaptureEntity> findWarningCaptures();
 
     @Query("SELECT c FROM CaptureEntity c WHERE c.name = :name")

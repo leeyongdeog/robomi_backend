@@ -24,7 +24,7 @@ public class AudioWebSocketHandler extends BinaryWebSocketHandler {
     private static List<byte[]> audioChunks = new ArrayList<>();
     private static List<byte[]> recordChunks = new ArrayList<>();
     private static AudioFormat audioFormat;
-    private static final int DESIRED_CHUNK_SIZE = 10 * 1024; //
+    private static final int DESIRED_CHUNK_SIZE = 100 * 1024; //
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -56,7 +56,7 @@ public class AudioWebSocketHandler extends BinaryWebSocketHandler {
             System.out.println();
 
             if (audioFormat == null) {
-                audioFormat = new AudioFormat(44100, 16, 1, true, false);
+                audioFormat = new AudioFormat(22000, 16, 1, true, false);
             }
 
             audioChunks.add(audioData);
