@@ -11,6 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {
         "com.robomi.controller",
         "com.robomi.service",
+        "com.robomi.websock",
         "com.robomi"
 })
 public class Main {

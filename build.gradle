@@ -11,6 +11,7 @@ targetCompatibility = 11
 
 repositories {
     mavenCentral()
+
 }
 
 dependencies {
@@ -38,7 +39,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.glassfish.tyrus.bundles:tyrus-standalone-client:1.17'
     implementation "org.bytedeco:javacv-platform:1.5.10"
-//    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.7'
+
+//    implementation 'org.ros.rosjava_core:rosjava:0.3.7'
 }
 
 
