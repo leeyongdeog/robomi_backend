@@ -28,7 +28,8 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30' // Lombok 버전 1.18.30으로 수정
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-    implementation group: 'org.openpnp', name: 'opencv', version: '4.9.0-0'
+    implementation group: 'org.openpnp', name: 'opencv', version: '4.8.1-0'
+    implementation files('libs/opencv-480.jar')
 
     implementation platform('software.amazon.awssdk:bom:2.21.1')
     implementation 'software.amazon.awssdk:s3'
@@ -55,7 +56,19 @@ dependencies {
     implementation 'io.netty:netty-all:4.1.70.Final'
 }
 
+def nativeLibDir = "/home/ubuntu2004/opencv-src/opencv-4.8.0/build/lib"
 
+tasks.withType(JavaExec) {
+    doFirst {
+        systemProperty "java.library.path", nativeLibDir
+    }
+}
+
+tasks.withType(Test) {
+    doFirst {
+        systemProperty "java.library.path", nativeLibDir
+    }
+}
 
 test {
     useJUnitPlatform()
