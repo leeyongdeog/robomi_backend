@@ -1,5 +1,11 @@
 package com.robomi.ros;
 
+import com.robomi.Main;
+import com.robomi.MessageWebSocketHandler;
+import com.robomi.VideoWebSocketHandler;
+import com.robomi.object.DetectingObject;
+import com.robomi.object.OBJECT_STATUS;
+import com.robomi.object.ObjectInfo;
 import com.robomi.store.VideoDataStore;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -24,21 +30,28 @@ import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class SubVideoNode extends AbstractNodeMain {
     private final VideoDataStore videoDataStore;
-    private final String topicName;
-    private final String messageType;
+    private String topicName;
+    private String messageType;
     private long lastExecutionTime = 0;
-
+    private long captureTerm = 1000;
+    private String type;
 
     @Autowired
-    public SubVideoNode(VideoDataStore store, @Value("${video.topic.name}")String topicName, @Value("${video.message.type}")String messageType){
-        System.out.println("-----------------SubVideoNode constructor");
+    public SubVideoNode(VideoDataStore store){
+        this.videoDataStore = store;
+    }
+
+    public void InitialNode(String type, String topicName, String messageType, long captureTerm){
+        System.out.println(topicName+" SubVideoNode ready -------------------------");
         this.topicName = topicName;
         this.messageType = messageType;
-        this.videoDataStore = store;
+        this.captureTerm = captureTerm;
+        this.type = type;
     }
 
     @Override
@@ -46,16 +59,31 @@ public class SubVideoNode extends AbstractNodeMain {
         return GraphName.of(this.messageType);
     }
 
+    public static byte[] readImageFileToByteArray(String imagePath) throws IOException {
+        File imageFile = new File(imagePath);
+        try (FileInputStream fis = new FileInputStream(imageFile);
+             ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                bos.write(buffer, 0, bytesRead);
+            }
+
+            return bos.toByteArray();
+        }
+    }
+
     @Override
     public void onStart(ConnectedNode connectedNode) {
+        System.out.println(topicName+" SubVideoNode start -------------------------");
         final Subscriber<Image> subscriber = connectedNode.newSubscriber(topicName, messageType);
         subscriber.addMessageListener(new MessageListener<Image>() {
             @Override
             public void onNewMessage(Image image) {
                 long currentTime = System.currentTimeMillis();
                 if(lastExecutionTime == 0) lastExecutionTime = currentTime;
-
-                if(currentTime - lastExecutionTime >= 50){
+                if(currentTime - lastExecutionTime >= captureTerm){
                     lastExecutionTime = currentTime;
                     ChannelBuffer buffer = image.getData();
                     byte[] imageData = new byte[buffer.readableBytes()];
@@ -63,14 +91,18 @@ public class SubVideoNode extends AbstractNodeMain {
 
                     int width = image.getWidth();
                     int height = image.getHeight();
+
+                    System.out.println("width: "+width+" height: "+height);
+
                     String encoding = image.getEncoding();
                     byte[] decodeData = new byte[width * height * 3];
                     try {
                         byte[] data = image.getData().array();
                         for (int i = 0; i < width * height; i++) {
+                            byte temp = decodeData[i * 3];
                             decodeData[i * 3] = data[i * 3 + 2]; // Red
                             decodeData[i * 3 + 1] = data[i * 3 + 1]; // Green
-                            decodeData[i * 3 + 2] = data[i * 3]; // Blue
+                            decodeData[i * 3 + 2] = temp; // Blue
                         }
 
                         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -82,7 +114,14 @@ public class SubVideoNode extends AbstractNodeMain {
                         byte[] byteArray = baos.toByteArray(); // ByteArrayOutputStream에서 byte 배열로 변환
                         baos.close();
 
-                        videoDataStore.insertQueue(byteArray);
+                        DetectingObject detect = DetectingObject.getInstance();
+                        if(type == "object"){
+                            videoDataStore.insertObjQueue(byteArray);
+                            detect.updateObject(byteArray, Main.getObjectInfoList());
+                        } else{
+                            videoDataStore.insertRtQueue(byteArray);
+                            detect.realtime_camera_check(byteArray);
+                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -90,8 +129,6 @@ public class SubVideoNode extends AbstractNodeMain {
                 }
             }
         });
-
         super.onStart(connectedNode);
-
     }
 }

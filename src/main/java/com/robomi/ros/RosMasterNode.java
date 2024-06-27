@@ -54,12 +54,15 @@ public class RosMasterNode extends AbstractNodeMain implements ApplicationContex
         NodeConfiguration nodeConfiguration = NodeConfiguration.newPrivate();
         nodeConfiguration.setNodeName("SubVideoNode");
 
-//        String topicName = "/ip129_usb_cam0/image_raw";
-//        SubVideoNode subVideoNode = new SubVideoNode(topicName, "sensor_msgs/Image");
-        SubVideoNode subVideoNode = applicationContext.getBean(SubVideoNode.class);
+//        SubVideoNode objVideoNode = applicationContext.getBean(SubVideoNode.class);
+//        objVideoNode.InitialNode("object","/ip129_usb_cam0/image_raw", "sensor_msgs/Image", 1000);
+
+        SubVideoNode rtVideoNode = applicationContext.getBean(SubVideoNode.class);
+        rtVideoNode.InitialNode("realtime", "/ip129_usb_cam0/image_raw", "sensor_msgs/Image", 100);
 
         NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
-        nodeMainExecutor.execute(subVideoNode, nodeConfiguration);
+//        nodeMainExecutor.execute(objVideoNode, nodeConfiguration);
+        nodeMainExecutor.execute(rtVideoNode, nodeConfiguration);
 
         System.out.println("Video Sub Node Started");
     }

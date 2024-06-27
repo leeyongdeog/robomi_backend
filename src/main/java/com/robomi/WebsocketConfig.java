@@ -12,16 +12,18 @@ import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 @EnableWebSocket
 public class WebsocketConfig implements WebSocketConfigurer {
     private final VideoWebSocketHandler videoWebSocketHandler;
+    private final MessageWebSocketHandler msgWebSocketHandler;
 
     @Autowired
-    public WebsocketConfig(VideoWebSocketHandler videoWebSocketHandler){
-        System.out.println("-----------------WebsocketConfig constructor");
+    public WebsocketConfig(VideoWebSocketHandler videoWebSocketHandler, MessageWebSocketHandler msgWebSocketHandler){
         this.videoWebSocketHandler = videoWebSocketHandler;
+        this.msgWebSocketHandler = msgWebSocketHandler;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(videoWebSocketHandler, "/video").setAllowedOrigins("*");
+        registry.addHandler(msgWebSocketHandler, "/msg").setAllowedOrigins("*");
         registry.addHandler(new AudioWebSocketHandler(), "/audio").setAllowedOrigins("*");
     }
 }
