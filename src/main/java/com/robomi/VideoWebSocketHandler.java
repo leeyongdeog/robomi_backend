@@ -26,12 +26,10 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     private static VideoWebSocketHandler instance;
     private static boolean[] cameraStarted = new boolean[cam_number];
 
-//    private static final OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
     private static final Java2DFrameConverter converter = new Java2DFrameConverter();
 
     @Autowired
     public VideoWebSocketHandler(VideoDataStore videoDataStore){
-        System.out.println("-----------------VideoWebSocketHandler constructor");
         this.videoDataStore = videoDataStore;
     }
 
@@ -45,35 +43,6 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     public static int getCameraCount() throws Exception{
         return cam_number;
     }
-
-
-
-//    private static List<OpenCVFrameGrabber> grabberList = new ArrayList<>(cam_number);
-//    static void initialize_grabber() throws Exception{
-//        for(int i=0; i<cam_number; ++i){
-//            OpenCVFrameGrabber g = new OpenCVFrameGrabber(0);
-//            grabberList.add(g);
-//            cameraStarted[i] = false;
-//        }
-//    }
-//
-//    public static void startAllCameras() throws Exception{
-//        for (int i = 0; i < grabberList.size(); i++) {
-//            if (!cameraStarted[i]) {
-//                grabberList.get(i).start();
-//                cameraStarted[i] = true;
-//            }
-//        }
-//    }
-//
-//    public static void stopAllCameras() throws Exception{
-//        for (int i = 0; i < grabberList.size(); i++) {
-//            if (cameraStarted[i]) {
-//                grabberList.get(i).stop();
-//                cameraStarted[i] = false;
-//            }
-//        }
-//    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -129,24 +98,11 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
                 session.close();
             }
         };
-//        stopAllCameras();
         sessions.clear();
     }
 
     private byte[] getVideoFrame(int index) throws Exception{
-//        if (index >= 0 && index < grabberList.size() && cameraStarted[index])
-//        {
-//            Frame frame = grabberList.get(index).grab();
-//            BufferedImage bufferedImage = converter.convert(frame);
-//            try(ByteArrayOutputStream bao = new ByteArrayOutputStream()){
-//                ImageIO.write(bufferedImage, "jpg", bao);
-//                return bao.toByteArray();
-//            }
-//        } else{
-//            return new byte[0];
-//        }
-
-        return videoDataStore.potQueue();
+        return videoDataStore.popRtQueue();
     }
 
     private static String createJsonData(int index, byte[] frameData) throws Exception{
@@ -155,5 +111,19 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
         jsonMap.put("frameData", Base64.getEncoder().encodeToString(frameData));
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(jsonMap);
+    }
+
+    public void sendTiltStatus(String status) throws Exception {
+        Map<String, Object> jsonMap = new HashMap<>();
+        jsonMap.put("tiltStatus", status);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonData = mapper.writeValueAsString(jsonMap);
+        TextMessage message = new TextMessage(jsonData);
+
+        for (WebSocketSession session : sessions) {
+            if (session.isOpen()) {
+                session.sendMessage(message);
+            }
+        }
     }
 }

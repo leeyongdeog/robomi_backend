@@ -6,24 +6,42 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 @Component
 public class VideoDataStore {
-        private BlockingQueue<byte[]> videoFrameQ;
+        private BlockingQueue<byte[]> objVideoFrameQ;
+        private BlockingQueue<byte[]> rtVideoFrameQ;
 
         public VideoDataStore() {
                 // LinkedBlockingQueue로 videoFrameQ를 초기화
-                this.videoFrameQ = new LinkedBlockingQueue<>();
+                this.objVideoFrameQ = new LinkedBlockingQueue<>();
+                this.rtVideoFrameQ = new LinkedBlockingQueue<>();
         }
 
-        public void insertQueue(byte[] frame){
+        public void insertObjQueue(byte[] frame){
                 try{
-                        videoFrameQ.put(frame);
+                        objVideoFrameQ.put(frame);
+                } catch(Exception e){
+                        e.printStackTrace();
+                }
+        }
+        public void insertRtQueue(byte[] frame){
+                try{
+                        rtVideoFrameQ.put(frame);
                 } catch(Exception e){
                         e.printStackTrace();
                 }
         }
 
-        public byte[] potQueue(){
+        public byte[] popObjQueue(){
                 try{
-                        return videoFrameQ.take();
+                        return objVideoFrameQ.take();
+
+                } catch (Exception e){
+                        e.printStackTrace();
+                        return null;
+                }
+        }
+        public byte[] popRtQueue(){
+                try{
+                        return rtVideoFrameQ.take();
 
                 } catch (Exception e){
                         e.printStackTrace();

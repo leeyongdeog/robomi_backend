@@ -49,10 +49,8 @@ public class CaptureService {
         String S3BucketName = "robomi-storage";
         String region = "ap-northeast-2";
 
-
         S3Uploader.uploadFile(S3BucketName, folderName, keyName, file);
 
-//        https://robomi-storage.s3.ap-northeast-2.amazonaws.com/manager/44b8bdf3-22f0-4aab-8a7e-fc447c9ed86f.jpg
         String imgUrl = "https://" + S3BucketName + ".s3." + region + ".amazonaws.com/" +folderName + "/" + keyName + ".jpg";
         System.out.println(imgUrl);
         return imgUrl;
