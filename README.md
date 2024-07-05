@@ -101,4 +101,10 @@ CREATE TABLE `weights` (
 
 * ROS 토픽: /usb_cam/image_raw
 
+---
 
+### 실행 의존성 설정 관련 정보
+
+* libs 디렉토리를 LD_LIBRARY_PATH 추가
+
+* ROS MASTER 접속: http://localhost:11311/
