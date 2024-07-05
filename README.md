@@ -97,6 +97,7 @@ CREATE TABLE `weights` (
 * ... api/capture/allCaptures
 
   ※ 영상 수신 기능 시험을 위해선 서버 ip 변경 여부 검토 필요
+     패키지 com.robomi.robomifront에서 VideoActivity.java, VideoActivity.java
 
 ### 스프링부트 서버의 외부 접속 정보 일부 기록
 
