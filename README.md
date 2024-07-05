@@ -100,6 +100,8 @@ CREATE TABLE `weights` (
 
   ※ 패키지 com.robomi.robomifront에서 VideoActivity.java, VideoActivity.java
 
+  ※ 파일 build.gralde 에서 SERVER_URL 정의 변경 필요
+
 ### 스프링부트 서버의 외부 접속 정보 일부 기록
 
 * ROS 토픽: /usb_cam/image_raw
