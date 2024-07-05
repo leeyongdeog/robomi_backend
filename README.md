@@ -86,3 +86,19 @@ CREATE TABLE `weights` (
   PRIMARY KEY (`seq`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='학습한 Tensor 모델';
 ```
+
+---
+
+### 안드로이드 클라리언트 앱의 서버 접속 정보 일부
+
+* ws://192.168.123.122:8080/audio
+* ws://192.168.123.122:8080/video
+* ws://192.168.123.122:8080/msg
+* ... api/capture/allCaptures
+
+
+### 스프링부트 서버의 외부 접속 정보 일부 기록
+
+* ROS 토픽: /usb_cam/image_raw
+
+
