@@ -106,5 +106,10 @@ CREATE TABLE `weights` (
 ### 실행 의존성 설정 관련 정보
 
 * libs 디렉토리를 LD_LIBRARY_PATH 추가
+  ※ 개발 환경이 아닌, 실행 시, /robomi_... 디렉토리 관련 별도 고려
 
 * ROS MASTER 접속: http://localhost:11311/
+  ※ 실행 시, 패키지 com.robomi.object 의 DetectingObject.java 에서
+     하드코딩 주소 변경 필요 가능성 검토
+
+
