@@ -16,11 +16,11 @@
 
 ### 프로그램 구현 내 포함 기능
 
-* 통신 처리: ROS 통신 연계 작동
+* 통신 처리: ROS 통신 연계. 클라이언트와는 웹소켓
 
-* 영상 처리
+* 영상 처리: 카메라 2대
 
-* 음성 처리
+* 음성 처리:
 
 ---
 
@@ -28,10 +28,61 @@
 
 * 기본 환경: intellj, jdk-21 (외부), jdk-17 (도구 내부)
 
-* 부가 환경: opencv 4.8(외부), 
+* 부가 환경: opencv 4.8(외부), java
 
 * 기타 참고: 클라이언트 연동은 안드로이드 폰에서 진행
 
+* 개발 도구: 인텔리제이
+
 ---
 
+### 데이터베이스 및 테이블 생성 스크립트
 
+```
+jdbc:mariadb://robomidb.c5kcq80emm6y.ap-northeast-2.rds.amazonaws.com:3306/robomidb
+---
+CREATE DATABASE `robomidb`
+
+-- robomidb.capture definition
+
+CREATE TABLE `capture` (
+  `seq` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) DEFAULT NULL,
+  `status` int(10) unsigned DEFAULT NULL,
+  `img_path` varchar(255) DEFAULT NULL,
+  `update_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`seq`)
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='로봇이 순찰하며 촬영한 전시물';
+-- robomidb.manager definition
+
+CREATE TABLE `manager` (
+  `seq` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  `type` int(10) DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
+  `img_path` varchar(255) DEFAULT NULL,
+  `update_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`seq`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- robomidb.objects definition
+
+CREATE TABLE `objects` (
+  `seq` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `display` int(10) unsigned DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
+  `img_path` varchar(255) DEFAULT NULL,
+  `update_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`seq`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='전시물 목록';
+-- robomidb.weights definition
+
+CREATE TABLE `weights` (
+  `seq` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `s3_path` varchar(255) DEFAULT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`seq`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='학습한 Tensor 모델';
+```
