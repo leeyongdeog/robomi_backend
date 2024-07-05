@@ -96,6 +96,7 @@ CREATE TABLE `weights` (
 * ws://192.168.123.122:8080/msg
 * ... api/capture/allCaptures
 
+  ※ 영상 수신 기능 시험을 위해선 서버 ip 변경 여부 검토 필요
 
 ### 스프링부트 서버의 외부 접속 정보 일부 기록
 
