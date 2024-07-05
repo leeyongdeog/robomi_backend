@@ -212,8 +212,8 @@ public class DetectingObject {
         ProcessedImage croppedObjects = communicationRPC(rpcData);
         if(croppedObjects == null) return null;
 
-        System.out.println("RPC cropped: "+ croppedObjects.getCroppedDataSize());
-        System.out.println("RPC Status: "+ croppedObjects.getStatus());
+//        System.out.println("RPC cropped: "+ croppedObjects.getCroppedDataSize());
+//        System.out.println("RPC Status: "+ croppedObjects.getStatus());
         if(croppedObjects.getStatus().equals("default")) return null;
         // 검출표시된 이미지 알림으로 캡쳐로 전송
         // 클라이언트로 알림 메세지 전송
@@ -228,9 +228,6 @@ public class DetectingObject {
 
             byte[] byteArray = new byte[croppedData.imageData.remaining()];
             croppedData.imageData.get(byteArray);
-
-            System.out.println("Byte array length: " + byteArray.length);
-            System.out.println("First 10 bytes: " + Arrays.toString(Arrays.copyOfRange(byteArray, 0, 10)));
 
             // MatOfByte로 이미지 데이터 디코딩
             Mat imgMat = Imgcodecs.imdecode(new MatOfByte(byteArray), Imgcodecs.IMREAD_GRAYSCALE);
@@ -248,6 +245,7 @@ public class DetectingObject {
 
                 MultipartFile capture = convertMultipartFile(byteArray, "RealTime");
                 if(capture != null){
+
                     try{
                         // 화면캡쳐 이미지 S3에 업로드
                         String keyName = UUID.randomUUID().toString();
@@ -326,7 +324,7 @@ public class DetectingObject {
                 for(int j = 0; j<crop_desc_list.size(); ++j){
                     goodMatchList = checkGoodMatch(obj_descriptors.get(i), crop_desc_list.get(j), MATCH_THRESHOLD);
                     if(goodMatchList.size() >= GOODMATCH_THRESHOLD){
-//                        System.out.println("------------------ test object DETECTED !!!!"+goodMatchList.size());
+                        System.out.println("------------------ test object DETECTED !!!!"+goodMatchList.size());
 
                         // ----- 기울기 체크, 존재유무 체크, 파손유무 체크
                         OBJECT_STATUS status = checkStatus(goodMatchList,
@@ -337,6 +335,7 @@ public class DetectingObject {
                         objectInfo.setObjectStatus(status);
                         objectInfo.updateCheckTime(System.currentTimeMillis());
                         findObject = true;
+
 
                         if(status != OBJECT_STATUS.OK){
                             MultipartFile capture = convertMultipartFile(cameraByte, objectInfo.getObjectName());

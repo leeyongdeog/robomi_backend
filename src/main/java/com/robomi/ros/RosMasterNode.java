@@ -1,5 +1,6 @@
 package com.robomi.ros;
 
+import com.robomi.store.VideoDataStore;
 import org.ros.namespace.GraphName;
 import org.ros.node.*;
 import org.springframework.context.ApplicationContext;
@@ -51,18 +52,23 @@ public class RosMasterNode extends AbstractNodeMain implements ApplicationContex
     }
 
     private void startVideoSubNode(){
-        NodeConfiguration nodeConfiguration = NodeConfiguration.newPrivate();
-        nodeConfiguration.setNodeName("SubVideoNode");
+        NodeConfiguration objNodeConfiguration = NodeConfiguration.newPrivate();
+        objNodeConfiguration.setNodeName("SubVideoNodeObject");
 
-//        SubVideoNode objVideoNode = applicationContext.getBean(SubVideoNode.class);
-//        objVideoNode.InitialNode("object","/ip129_usb_cam0/image_raw", "sensor_msgs/Image", 1000);
+        NodeConfiguration rtNodeConfiguration = NodeConfiguration.newPrivate();
+        rtNodeConfiguration.setNodeName("SubVideoNodeRealtime");
 
-        SubVideoNode rtVideoNode = applicationContext.getBean(SubVideoNode.class);
-        rtVideoNode.InitialNode("realtime", "/ip129_usb_cam0/image_raw", "sensor_msgs/Image", 100);
+        SubVideoNode objVideoNode = new SubVideoNode(applicationContext.getBean(VideoDataStore.class));
+        objVideoNode.InitialNode("object", "/detect/image_raw", "sensor_msgs/Image", 100);
+        objVideoNode.setNodeName("SubVideoNodeObject");
+
+        SubVideoNode rtVideoNode = new SubVideoNode(applicationContext.getBean(VideoDataStore.class));
+        rtVideoNode.InitialNode("realtime", "/realtime/image_raw", "sensor_msgs/Image", 100);
+        rtVideoNode.setNodeName("SubVideoNodeRealtime");
 
         NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
-//        nodeMainExecutor.execute(objVideoNode, nodeConfiguration);
-        nodeMainExecutor.execute(rtVideoNode, nodeConfiguration);
+        nodeMainExecutor.execute(rtVideoNode, rtNodeConfiguration);
+        nodeMainExecutor.execute(objVideoNode, objNodeConfiguration);
 
         System.out.println("Video Sub Node Started");
     }

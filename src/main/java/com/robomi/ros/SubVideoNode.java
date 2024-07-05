@@ -40,14 +40,19 @@ public class SubVideoNode extends AbstractNodeMain {
     private long lastExecutionTime = 0;
     private long captureTerm = 1000;
     private String type;
+    private String nodeName;
 
     @Autowired
     public SubVideoNode(VideoDataStore store){
         this.videoDataStore = store;
     }
 
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
     public void InitialNode(String type, String topicName, String messageType, long captureTerm){
-        System.out.println(topicName+" SubVideoNode ready -------------------------");
+        System.out.println(topicName+" SubVideoNode ready ---"+type);
         this.topicName = topicName;
         this.messageType = messageType;
         this.captureTerm = captureTerm;
@@ -76,7 +81,6 @@ public class SubVideoNode extends AbstractNodeMain {
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        System.out.println(topicName+" SubVideoNode start -------------------------");
         final Subscriber<Image> subscriber = connectedNode.newSubscriber(topicName, messageType);
         subscriber.addMessageListener(new MessageListener<Image>() {
             @Override
@@ -86,13 +90,22 @@ public class SubVideoNode extends AbstractNodeMain {
                 if(currentTime - lastExecutionTime >= captureTerm){
                     lastExecutionTime = currentTime;
                     ChannelBuffer buffer = image.getData();
-                    byte[] imageData = new byte[buffer.readableBytes()];
+//                    byte[] imageData = new byte[buffer.readableBytes()];
+//                    buffer.readBytes(imageData);
+
+                    // 남은 데이터의 크기 확인
+                    int remainingBytes = buffer.readableBytes();
+
+                    // 남은 데이터 크기만큼의 배열 생성
+                    byte[] imageData = new byte[remainingBytes];
+
+                    // 버퍼에서 데이터 읽어오기
                     buffer.readBytes(imageData);
 
                     int width = image.getWidth();
                     int height = image.getHeight();
 
-                    System.out.println("width: "+width+" height: "+height);
+//                    System.out.println("width: "+width+" height: "+height);
 
                     String encoding = image.getEncoding();
                     byte[] decodeData = new byte[width * height * 3];
@@ -115,6 +128,7 @@ public class SubVideoNode extends AbstractNodeMain {
                         baos.close();
 
                         DetectingObject detect = DetectingObject.getInstance();
+
                         if(type == "object"){
                             videoDataStore.insertObjQueue(byteArray);
                             detect.updateObject(byteArray, Main.getObjectInfoList());
@@ -130,5 +144,48 @@ public class SubVideoNode extends AbstractNodeMain {
             }
         });
         super.onStart(connectedNode);
+    }
+
+    public static byte[] convertYUYVtoRGB(byte[] yuyvData, int width, int height) {
+        byte[] rgbData = new byte[width * height * 3];
+        int index = 0;
+
+        for (int i = 0; i < yuyvData.length; i += 4) {
+            int y0 = yuyvData[i] & 0xff;
+            int u0 = yuyvData[i + 1] & 0xff;
+            int y1 = yuyvData[i + 2] & 0xff;
+            int v0 = yuyvData[i + 3] & 0xff;
+
+            byte[] rgb0 = yuvToRgb(y0, u0, v0);
+            byte[] rgb1 = yuvToRgb(y1, u0, v0);
+
+            if (index + 6 <= rgbData.length) { // Check array bounds
+                System.arraycopy(rgb0, 0, rgbData, index, 3);
+                System.arraycopy(rgb1, 0, rgbData, index + 3, 3);
+                index += 6; // Move index by 6 bytes
+            } else {
+                System.err.println("Index out of bounds: " + index + " / " + rgbData.length);
+                break; // Exit the loop or handle the out-of-bounds situation
+            }
+        }
+
+        return rgbData;
+    }
+
+
+    private static byte[] yuvToRgb(int y, int u, int v) {
+        int c = y - 16;
+        int d = u - 128;
+        int e = v - 128;
+
+        int r = (298 * c + 409 * e + 128) >> 8;
+        int g = (298 * c - 100 * d - 208 * e + 128) >> 8;
+        int b = (298 * c + 516 * d + 128) >> 8;
+
+        r = Math.max(0, Math.min(255, r));
+        g = Math.max(0, Math.min(255, g));
+        b = Math.max(0, Math.min(255, b));
+
+        return new byte[] {(byte) r, (byte) g, (byte) b};
     }
 }
