@@ -17,5 +17,4 @@ public class ObjectEntity {
     private Long display;
     private LocalDateTime update_date;
     private LocalDateTime create_date;
-
 }

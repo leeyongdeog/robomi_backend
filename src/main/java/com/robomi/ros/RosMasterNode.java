@@ -1,5 +1,6 @@
 package com.robomi.ros;
 
+import com.robomi.store.VideoDataStore;
 import org.ros.namespace.GraphName;
 import org.ros.node.*;
 import org.springframework.context.ApplicationContext;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 
 @Component
 public class RosMasterNode extends AbstractNodeMain implements ApplicationContextAware {
@@ -51,15 +53,38 @@ public class RosMasterNode extends AbstractNodeMain implements ApplicationContex
     }
 
     private void startVideoSubNode(){
-        NodeConfiguration nodeConfiguration = NodeConfiguration.newPrivate();
-        nodeConfiguration.setNodeName("SubVideoNode");
+//        try{
+//            objNodeConfiguration.setMasterUri(new URI("http://192.168.123.126:11311"));
+//        }catch (Exception e){
+//            System.out.println("----------ROS MASTER Connect falied");
+//        }
+//        objNodeConfiguration.setNodeName("SubVideoNodeObject");
+//
+//
+//        NodeConfiguration rtNodeConfiguration = NodeConfiguration.newPrivate();
+//        try{
+//            rtNodeConfiguration.setMasterUri(new URI("http://192.168.123.126:11311"));
+//        }catch (Exception e){
+//            System.out.println("----------ROS MASTER Connect falied");
+//        }
 
-//        String topicName = "/ip129_usb_cam0/image_raw";
-//        SubVideoNode subVideoNode = new SubVideoNode(topicName, "sensor_msgs/Image");
-        SubVideoNode subVideoNode = applicationContext.getBean(SubVideoNode.class);
+        NodeConfiguration objNodeConfiguration = NodeConfiguration.newPrivate();
+        objNodeConfiguration.setNodeName("SubVideoNodeObject");
+
+        NodeConfiguration rtNodeConfiguration = NodeConfiguration.newPrivate();
+        rtNodeConfiguration.setNodeName("SubVideoNodeRealtime");
+
+        SubVideoNode objVideoNode = new SubVideoNode(applicationContext.getBean(VideoDataStore.class));
+        objVideoNode.InitialNode("object", "/detect/image_raw", "sensor_msgs/Image", 100);
+        objVideoNode.setNodeName("SubVideoNodeObject");
+
+        SubVideoNode rtVideoNode = new SubVideoNode(applicationContext.getBean(VideoDataStore.class));
+        rtVideoNode.InitialNode("realtime", "/realtime/image_raw", "sensor_msgs/Image", 100);
+        rtVideoNode.setNodeName("SubVideoNodeRealtime");
 
         NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
-        nodeMainExecutor.execute(subVideoNode, nodeConfiguration);
+        nodeMainExecutor.execute(rtVideoNode, rtNodeConfiguration);
+        nodeMainExecutor.execute(objVideoNode, objNodeConfiguration);
 
         System.out.println("Video Sub Node Started");
     }
