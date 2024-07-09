@@ -3,10 +3,19 @@ package com.robomi.service;
 import com.robomi.entity.ManagerEntity;
 import com.robomi.repository.ManagerRepo;
 import com.robomi.dto.ManagerDTO;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Rect;
+import org.opencv.face.LBPHFaceRecognizer;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +27,15 @@ import java.util.stream.Collectors;
 public class ManagerService {
     @Autowired
     private ManagerRepo managerRepo;
+
+//    private final CascadeClassifier faceCascade;
+//    private final LBPHFaceRecognizer faceRecognizer;
+//
+//    @Autowired
+//    public ManagerService(CascadeClassifier faceCascade, LBPHFaceRecognizer faceRecognizer) {
+//        this.faceCascade = faceCascade;
+//        this.faceRecognizer = faceRecognizer;
+//    }
 
     public List<ManagerDTO> getAllManagers(){
         List<ManagerEntity> managers = managerRepo.findAll();
@@ -69,5 +87,42 @@ public class ManagerService {
         entity.setCreate_date(currentTime);
         System.out.println("/" + entity);
         managerRepo.save(entity);
+    }
+
+    public int checkFace(MultipartFile file) throws IOException{
+        // 이미지 파일을 임시 저장
+//        File tempFile = File.createTempFile("uploaded_", ".jpg");
+//        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+//            fos.write(file.getBytes());
+//        }
+//
+//        // 이미지 읽기
+//        Mat image = Imgcodecs.imread(tempFile.getAbsolutePath());
+//        if (image.empty()) {
+//            throw new IOException("Failed to load image");
+//        }
+//
+//        // 그레이스케일로 변환
+//        Mat grayImage = new Mat();
+//        Imgproc.cvtColor(image, grayImage, Imgproc.COLOR_BGR2GRAY);
+//
+//        // 얼굴 검출
+//        MatOfRect faces = new MatOfRect();
+//        Main.faceCascade.detectMultiScale(grayImage, faces);
+//
+//        // 검출된 얼굴에서 얼굴 인식
+//        for (Rect rect : faces.toArray()) {
+//            Mat face = new Mat(grayImage, rect);
+//            int[] label = new int[1];
+//            double[] confidence = new double[1];
+//            Main.faceRecognizer.predict(face, label, confidence);
+//
+//            // 얼굴 인식 결과 확인
+//            if (confidence[0] < 100) { // 적절한 confidence threshold 설정
+//                return 1; // 얼굴 인식 성공
+//            }
+//        }
+
+        return 0; // 얼굴 인식 실패
     }
 }

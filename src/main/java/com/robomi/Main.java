@@ -1,21 +1,29 @@
 package com.robomi;
 
+import com.robomi.dto.ManagerDTO;
 import com.robomi.dto.ObjectDTO;
 import com.robomi.object.OBJECT_STATUS;
 import com.robomi.object.ObjectInfo;
 import com.robomi.ros.RosMasterNode;
+import com.robomi.service.ManagerService;
 import com.robomi.service.ObjectService;
 import com.robomi.store.VideoDataStore;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.opencv.global.opencv_core;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfKeyPoint;
+import org.opencv.android.Utils;
+import org.opencv.core.*;
+import org.opencv.face.LBPHFaceRecognizer;
 import org.opencv.features2d.BRISK;
 import org.opencv.features2d.ORB;
 import org.opencv.features2d.SIFT;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.xfeatures2d.SURF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -29,14 +37,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.InputStream;
+import java.util.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.awt.image.BufferedImage;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {
@@ -51,10 +60,15 @@ public class Main {
     private static VideoWebSocketHandler videoWebSocketHandler;
     private static List<ObjectInfo> objectInfoList = new ArrayList<>();
 
+    private CascadeClassifier faceCascade;
+    private LBPHFaceRecognizer faceRecognizer;
+
     @Autowired
     private ObjectService objectService;
     @Autowired
     private ResourceLoader resourceLoader;
+    @Autowired
+    private ManagerService managerService;
 
     public static void main(String[] args) {
         SpringApplication application = new SpringApplication(Main.class);
@@ -89,6 +103,145 @@ public class Main {
         }
 
         LoadObjectInfo();
+        LoadManagers();
+
+
+
+    }
+
+    public void LoadManagers(){
+        List<ManagerDTO> managerList = managerService.getAllManagers();
+        loadHaarCascade();
+        augmentAndTrainImages(managerList);
+    }
+
+    private void loadHaarCascade(){
+        try {
+            try {
+                // XML 파일 경로
+                String xmlFilePath = "libs/haarcascade_frontalface_default.xml";
+                // CascadeClassifier 초기화
+                faceCascade = new CascadeClassifier();
+                faceCascade.load(xmlFilePath);
+                System.out.println("OpenCV Haar-Cascade Load Success!!");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Mat downloadAndReadImage(String imageUrl) {
+        String tempFilePath = "temp_imagefolder/temp_image.jpg";
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet request = new HttpGet(imageUrl);
+            HttpResponse response = httpClient.execute(request);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                try (FileOutputStream fos = new FileOutputStream(tempFilePath)) {
+                    entity.writeTo(fos);
+                }
+                Mat image = Imgcodecs.imread(tempFilePath);
+                if (!image.empty()) {
+                    Mat grayImage = new Mat();
+                    Imgproc.cvtColor(image, grayImage, Imgproc.COLOR_BGR2GRAY);
+                    return grayImage;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new Mat(); // 빈 Mat 반환
+    }
+
+    /// 이미지 변형 및 학습
+    private void augmentAndTrainImages(List<ManagerDTO> managerList) {
+        List<Mat> allImages = new ArrayList<>();
+        List<Integer> allLabels = new ArrayList<>();
+        for (ManagerDTO manager : managerList) {
+            Mat originalMat = downloadAndReadImage(manager.getImg_path());
+            if (!originalMat.empty()) {
+                // 좌 20도 회전
+                Mat leftRotatedMat = rotateImage(originalMat, -20);
+                saveMat(leftRotatedMat, "temp_imagefolder/"+manager.getName() + "_left_rotated.jpg");
+                allImages.add(leftRotatedMat);
+                allLabels.add(manager.getSeq().intValue());
+
+                // 우 20도 회전
+                Mat rightRotatedMat = rotateImage(originalMat, 20);
+                saveMat(rightRotatedMat, "temp_imagefolder/"+manager.getName() + "_right_rotated.jpg");
+                allImages.add(rightRotatedMat);
+                allLabels.add(manager.getSeq().intValue());
+
+                // 원본 사진
+                saveMat(originalMat, "temp_imagefolder/"+manager.getName() + "_original.jpg");
+                allImages.add(originalMat);
+                allLabels.add(manager.getSeq().intValue());
+
+                // 밝기를 30% 떨어뜨린 사진
+                Mat darkenedMat = changeBrightness(originalMat, -30);
+                saveMat(darkenedMat, "temp_imagefolder/"+manager.getName() + "_darkened.jpg");
+                allImages.add(darkenedMat);
+                allLabels.add(manager.getSeq().intValue());
+
+                // 밝기를 30% 올린 사진
+                Mat brightenedMat = changeBrightness(originalMat, 30);
+                saveMat(brightenedMat, "temp_imagefolder/"+manager.getName() + "_brightened.jpg");
+                allImages.add(brightenedMat);
+                allLabels.add(manager.getSeq().intValue());
+            }
+            else{
+                System.out.println("origin mat empty");
+            }
+        }
+
+        // 모든 이미지를 FaceRecognition 모델에 학습시킴
+        trainFaceRecognitionModel(allImages, allLabels);
+    }
+
+    // 이미지의 밝기를 조정하는 메서드
+    private Mat changeBrightness(Mat inputMat, int value) {
+        Mat processedMat = new Mat(inputMat.rows(), inputMat.cols(), inputMat.type());
+
+        // 밝기 조정
+        Core.add(inputMat, new Scalar(value, value, value), processedMat);
+
+        return processedMat;
+    }
+
+    // 이미지 회전
+    private Mat rotateImage(Mat source, double angle) {
+        Mat rotated = new Mat();
+        Point center = new Point(source.cols() / 2, source.rows() / 2);
+        Mat rotationMatrix = Imgproc.getRotationMatrix2D(center, angle, 1.0);
+        Imgproc.warpAffine(source, rotated, rotationMatrix, source.size());
+        return rotated;
+    }
+
+    // 이미지 저장
+    private void saveMat(Mat image, String fileName) {
+        Imgcodecs.imwrite(fileName, image);
+    }
+
+    // 얼굴 인식 모델 학습
+    private void trainFaceRecognitionModel(List<Mat> images, List<Integer> labels) {
+        faceRecognizer = LBPHFaceRecognizer.create();
+
+        // 레이블을 MatOfInt로 변환
+        Mat labelsMat = new Mat(labels.size(), 1, CvType.CV_32SC1);
+        int[] labelsArray = new int[labels.size()];
+        for (int i = 0; i < labels.size(); i++) {
+            labelsArray[i] = labels.get(i);
+        }
+        labelsMat.put(0, 0, labelsArray);
+
+        System.out.println("images: "+images.size()+" labels: "+labelsMat.size());
+        // 학습
+        faceRecognizer.train(images, labelsMat);
+        faceRecognizer.save("libs/face_recognition_model.xml");
+        System.out.println("Face recognition model training completed.");
     }
 
     public void LoadObjectInfo(){

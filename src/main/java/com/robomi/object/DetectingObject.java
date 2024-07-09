@@ -22,6 +22,7 @@ import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.tensorflow.SavedModelBundle;
@@ -35,26 +36,27 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
+import java.net.URL;
 
 public class DetectingObject {
     @Autowired
     private CaptureService captureService;
 
+    @Value("${sound.server.url}")
+    private String sound_server_url;
+
     public static long TURN_TIME = 3000; // 추후 실습시엔 로봇이 전시장전체를 1바퀴 도는 시간으로 설정.
     private static DetectingObject instance;
     private int GOODMATCH_THRESHOLD = 10;
-    private double MATCH_THRESHOLD = 200;
+    private double MATCH_THRESHOLD = 60;
     private int HOMOGRAPY_THRESHOLD = 5;
     private double TILT_THRESHOLD = 15.0;
     private double CUT_AREA_LR = 0.3;
@@ -266,6 +268,8 @@ public class DetectingObject {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+
+                        playSound();
                     } catch (Exception e){
                         System.out.println("upload capture to S3 failed");
                         e.printStackTrace();
@@ -326,16 +330,25 @@ public class DetectingObject {
                     if(goodMatchList.size() >= GOODMATCH_THRESHOLD){
                         System.out.println("------------------ test object DETECTED !!!!"+goodMatchList.size());
 
+                        // 카메라 이미지 저장
+                        String camImageFileName = "cam.jpg";
+                        Imgcodecs.imwrite(camImageFileName, cameraFrame);
+
+                        // 원본 이미지 저장
+                        String orgImageFileName = "org.jpg";
+                        Imgcodecs.imwrite(orgImageFileName, obj_imageMats.get(i));
+
                         // ----- 기울기 체크, 존재유무 체크, 파손유무 체크
                         OBJECT_STATUS status = checkStatus(goodMatchList,
                                 obj_keypoint.get(i), crop_kp_list.get(j),
                                 obj_imageMats.get(i), croppedList.get(j),
                                 obj_descriptors.get(i), crop_desc_list.get(j));
 
+                        findObject = true;
+                        if(status == OBJECT_STATUS.UNKNOWN) continue;
+
                         objectInfo.setObjectStatus(status);
                         objectInfo.updateCheckTime(System.currentTimeMillis());
-                        findObject = true;
-
 
                         if(status != OBJECT_STATUS.OK){
                             MultipartFile capture = convertMultipartFile(cameraByte, objectInfo.getObjectName());
@@ -351,9 +364,9 @@ public class DetectingObject {
 
                                 //DB capture 테이블 업데이트
                                 String statusStr = status == OBJECT_STATUS.OK ? "OK"
-                                        : status == OBJECT_STATUS.TILT ? "TILT"
-                                        : status == OBJECT_STATUS.DAMAGE ? "DAMAGE"
-                                        : status == OBJECT_STATUS.LOST ? "LOST"
+                                        : status == OBJECT_STATUS.TILT ? "상태이상"
+                                        : status == OBJECT_STATUS.DAMAGE ? "파손"
+                                        : status == OBJECT_STATUS.LOST ? "분실"
                                         : "UNKNOWN";
 
                                 String imgUrl = "https://" + S3BucketName + ".s3." + region + ".amazonaws.com/" +folderName + "/" + keyName + ".jpg";
@@ -453,6 +466,45 @@ public class DetectingObject {
         drawMatchesWithBoundingBox(bufImage11, origin_keypoint.toList(), bufImage21, current_keypoint.toList(), matches, "origin_matched_image.jpg");
 
         return status;
+    }
+
+    private void playSound(){
+        String serverUrl = sound_server_url+"play_audio?file_name=sound.wav";
+
+        // POST 요청 보낼 데이터 설정
+        String audioFilename = "sound.wav";  // 재생할 오디오 파일명
+        String postData = "audio_filename=" + audioFilename;
+
+        try{
+            URL url = new URL(serverUrl);
+            // HttpURLConnection 객체 생성 및 설정
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.setRequestProperty("Content-Type", "application/text");
+            con.setDoOutput(true);
+
+            // 응답 코드 확인
+            int responseCode = con.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // 응답 내용 확인
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                System.out.println("Response: " + response.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // 연결 종료
+            con.disconnect();
+        }
+        catch (Exception e){
+            System.out.println("Sound play error" );
+        }
     }
 
     private boolean detectDamage(List<KeyPoint> origin, List<KeyPoint> current, List<DMatch> goodMatch){

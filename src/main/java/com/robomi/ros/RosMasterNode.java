@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 
 @Component
 public class RosMasterNode extends AbstractNodeMain implements ApplicationContextAware {
@@ -52,6 +53,21 @@ public class RosMasterNode extends AbstractNodeMain implements ApplicationContex
     }
 
     private void startVideoSubNode(){
+//        try{
+//            objNodeConfiguration.setMasterUri(new URI("http://192.168.123.126:11311"));
+//        }catch (Exception e){
+//            System.out.println("----------ROS MASTER Connect falied");
+//        }
+//        objNodeConfiguration.setNodeName("SubVideoNodeObject");
+//
+//
+//        NodeConfiguration rtNodeConfiguration = NodeConfiguration.newPrivate();
+//        try{
+//            rtNodeConfiguration.setMasterUri(new URI("http://192.168.123.126:11311"));
+//        }catch (Exception e){
+//            System.out.println("----------ROS MASTER Connect falied");
+//        }
+
         NodeConfiguration objNodeConfiguration = NodeConfiguration.newPrivate();
         objNodeConfiguration.setNodeName("SubVideoNodeObject");
 
