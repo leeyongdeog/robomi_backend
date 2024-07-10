@@ -139,7 +139,7 @@ roslaunch cam_pub_node cam_pub_node.launch
 
 ### 로봇 IoT에서 제어 통신 실행 (※ ROS 토픽 통신)
 
-* 사운드 전면과 측면 캠을 사용하는 RPi 보드에서 sound_flask_node 실행
+* 사운드 스피커를 사용하는 RPi 보드에서 sound_flask_node 실행
 
 ```
 roslaunch sound_flask_node sound_flask_node.launch
