@@ -1,0 +1,9 @@
+train: /home/ubuntu2004/ROBOMI/YOLO/yolov5/dataset/dataset/train/images
+val: /home/ubuntu2004/ROBOMI/YOLO/yolov5/dataset/dataset/val/images
+test: /home/ubuntu2004/ROBOMI/YOLO/yolov5/dataset/dataset/test/images
+# Number of Classes
+nc: 5
+
+# Class Names
+names: ['danger','umbrella','cup','canes','camstick']
+
