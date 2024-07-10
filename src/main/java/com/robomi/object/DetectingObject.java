@@ -19,6 +19,7 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.Features2d;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class DetectingObject {
     public static long TURN_TIME = 3000; // 추후 실습시엔 로봇이 전시장전체를 1바퀴 도는 시간으로 설정.
     private static DetectingObject instance;
     private int GOODMATCH_THRESHOLD = 10;
-    private double MATCH_THRESHOLD = 60;
+    private double MATCH_THRESHOLD = 150;
     private int HOMOGRAPY_THRESHOLD = 5;
     private double TILT_THRESHOLD = 15.0;
     private double CUT_AREA_LR = 0.3;
@@ -281,6 +282,21 @@ public class DetectingObject {
         return retImg;
     }
 
+    public void saveCroppedImages(List<Mat> croppedList, String directoryPath) {
+        // Ensure directory exists
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        // Save each cropped image
+        for (int i = 0; i < croppedList.size(); i++) {
+            Mat croppedImage = croppedList.get(i);
+            String filePath = directoryPath + File.separator + "cropped_image_" + i + ".jpg";
+            Imgcodecs.imwrite(filePath, croppedImage);
+            System.out.println("Saved: " + filePath);
+        }
+    }
     public boolean updateObject(byte[] cameraByte, List<ObjectInfo> objectInfoList){
         boolean retStatus = false;
 
@@ -288,10 +304,10 @@ public class DetectingObject {
         int width = cameraFrame.cols();
         int height = cameraFrame.rows();
 
-        int left = (int)(width * CUT_AREA_LR);
-        int top = (int)(height * CUT_AREA_TB);
-        int right = (int)(width * (1-CUT_AREA_LR));
-        int bottom = (int)(height * (1-CUT_AREA_TB));
+        int left = (int)(width * 0);
+        int top = (int)(height * 0);
+        int right = (int)(width * (1-0));
+        int bottom = (int)(height * (1-0));
 
         Rect roi = new Rect(new org.opencv.core.Point(left, top), new org.opencv.core.Point(right, bottom));
         cameraFrame = new Mat(cameraFrame, roi);
@@ -299,7 +315,13 @@ public class DetectingObject {
         MatOfByte buffer = new MatOfByte();
         Imgcodecs.imencode(".jpg", cameraFrame, buffer);
 
-        List<Mat> croppedList = cropByEdge(cameraFrame);
+//        List<Mat> croppedList = cropByEdge(cameraFrame);
+
+        List<Mat> croppedList = new ArrayList<>();
+        croppedList.add(cameraFrame);
+
+//        saveCroppedImages(croppedList, "temp_imagefolder");
+
 
         // 카메라에서 들어오는 이미지 키포인트와 디스크립터 계산
         List<MatOfKeyPoint> crop_kp_list = new ArrayList<>();
@@ -318,7 +340,6 @@ public class DetectingObject {
         for(ObjectInfo objectInfo : objectInfoList){
             // 마지막 체크시간이 로봇이 전시장 한바퀴 도는시간을 지나지 않았으면, 이 전시물은 비교 스킵 -> 불필요한 연산 제거
             if(System.currentTimeMillis() - objectInfo.getLastCheckTime() < TURN_TIME) continue;
-
             List<Mat> obj_descriptors = objectInfo.getDescriptors();
             List<Mat> obj_imageMats = objectInfo.getImageMat();
             List<MatOfKeyPoint> obj_keypoint = objectInfo.getKeyPoints();
@@ -327,9 +348,11 @@ public class DetectingObject {
             for(int i=0; i<obj_descriptors.size(); ++i){
                 for(int j = 0; j<crop_desc_list.size(); ++j){
                     goodMatchList = checkGoodMatch(obj_descriptors.get(i), crop_desc_list.get(j), MATCH_THRESHOLD);
+
                     if(goodMatchList.size() >= GOODMATCH_THRESHOLD){
                         System.out.println("------------------ test object DETECTED !!!!"+goodMatchList.size());
 
+                        saveCroppedImages(croppedList, "temp_imagefolder");
                         // 카메라 이미지 저장
                         String camImageFileName = "cam.jpg";
                         Imgcodecs.imwrite(camImageFileName, cameraFrame);
@@ -466,6 +489,26 @@ public class DetectingObject {
         drawMatchesWithBoundingBox(bufImage11, origin_keypoint.toList(), bufImage21, current_keypoint.toList(), matches, "origin_matched_image.jpg");
 
         return status;
+    }
+
+    public void saveMatchingResult(Mat origin_img, Mat current_img,
+                                   MatOfKeyPoint origin_keypoints, MatOfKeyPoint current_keypoints,
+                                   List<DMatch> matches, String filePath) {
+        Mat outputImg = new Mat();
+
+        // Convert List<DMatch> to MatOfDMatch
+        MatOfDMatch matOfDMatch = new MatOfDMatch();
+        matOfDMatch.fromList(matches);
+
+        // Draw matches
+        Scalar matchColor = new Scalar(0, 255, 0); // Green color for matches
+        MatOfByte mask = new MatOfByte();
+        Features2d.drawMatches(origin_img, origin_keypoints, current_img, current_keypoints,
+                matOfDMatch, outputImg, matchColor, Scalar.all(-1), mask, Features2d.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS);
+
+        // Save the image
+        Imgcodecs.imwrite(filePath, outputImg);
+        System.out.println("Saved matching result: " + filePath);
     }
 
     private void playSound(){

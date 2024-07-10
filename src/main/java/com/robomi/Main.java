@@ -246,7 +246,6 @@ public class Main {
 
     public void LoadObjectInfo(){
         List<ObjectDTO> objList = objectService.getAllObjects();
-        System.out.println(objList.get(0).getName());
 
         for (ObjectDTO dto : objList) {
             Mat originalMat = downloadAndReadImage(dto.getImg_path());
@@ -256,11 +255,31 @@ public class Main {
                 obj.setObjectStatus(OBJECT_STATUS.OK);
                 obj.updateCheckTime(0);
 
+                Mat descriptors = new Mat();
+                MatOfKeyPoint keypoints = new MatOfKeyPoint();
+                computeKeypointAndDescriptorBySIFT(originalMat, keypoints, descriptors);
+
+                obj.addKeypoint(keypoints);
+                obj.addDescriptor(descriptors);
+                obj.addImageMat(originalMat);
+
                 objectInfoList.add(obj);
             }
         }
 
         System.out.println("obj count: "+objectInfoList.size());
+    }
+
+    public void saveImage(Mat imageMat, String filePath) {
+        // Ensure directory exists
+        File directory = new File(filePath).getParentFile();
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        // Save the image
+        Imgcodecs.imwrite(filePath, imageMat);
+        System.out.println("Saved: " + filePath);
     }
 
     private void downloadImageIfNotExists(String imageUrl, String localFilePath) throws IOException {
@@ -302,10 +321,15 @@ public class Main {
         double sift_contrastThreshold = 0.08; // SIFT 코너 검출 임계값
         double sift_edgeThreshold = 15.0;    // SIFT 엣지 임계값
         double sift_sigma = 1.6;        // SIFT 옥타브 시그마
-        SIFT sift = SIFT.create(sift_nfeatures, sift_nOctaveLayers, sift_contrastThreshold, sift_edgeThreshold, sift_sigma);
-        sift.detectAndCompute(img, new Mat(), keypoints, descriptors);
-        if (descriptors.type() != CvType.CV_32F) {
-            descriptors.convertTo(descriptors, CvType.CV_32F);
+        try {
+            SIFT sift = SIFT.create(sift_nfeatures, sift_nOctaveLayers, sift_contrastThreshold, sift_edgeThreshold, sift_sigma);
+            sift.detectAndCompute(img, new Mat(), keypoints, descriptors);
+            if (descriptors.type() != CvType.CV_32F) {
+                descriptors.convertTo(descriptors, CvType.CV_32F);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error occurred while computing keypoints and descriptors using SIFT.");
         }
     }
 

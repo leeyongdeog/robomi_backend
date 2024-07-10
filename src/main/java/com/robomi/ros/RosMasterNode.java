@@ -75,11 +75,11 @@ public class RosMasterNode extends AbstractNodeMain implements ApplicationContex
         rtNodeConfiguration.setNodeName("SubVideoNodeRealtime");
 
         SubVideoNode objVideoNode = new SubVideoNode(applicationContext.getBean(VideoDataStore.class));
-        objVideoNode.InitialNode("object", "/detect/image_raw", "sensor_msgs/Image", 100);
+        objVideoNode.InitialNode("object", "/detect/image_raw", "sensor_msgs/CompressedImage", 500);
         objVideoNode.setNodeName("SubVideoNodeObject");
 
         SubVideoNode rtVideoNode = new SubVideoNode(applicationContext.getBean(VideoDataStore.class));
-        rtVideoNode.InitialNode("realtime", "/realtime/image_raw", "sensor_msgs/Image", 100);
+        rtVideoNode.InitialNode("realtime", "/realtime/image_raw", "sensor_msgs/CompressedImage", 100);
         rtVideoNode.setNodeName("SubVideoNodeRealtime");
 
         NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
