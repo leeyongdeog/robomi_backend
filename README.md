@@ -131,7 +131,7 @@ roscore
 
 ### 로봇 IoT에서 캠 2개 활용 실행 (※ ROS 토픽 통신)
 
-* 전면과 측면 캠을 사용하는 RPi 보드에서 cam_pub_node 실행
+* 전면과 측면 캠 2대를 사용하는 RPi 보드에서 cam_pub_node 실행
 
 ```
 roslaunch cam_pub_node cam_pub_node.launch
