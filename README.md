@@ -121,21 +121,33 @@ CREATE TABLE `weights` (
 
 ---
 
-### roscore 실행 (※ ROS 서버 역할; 토픽 통신)
+### 서버에서 roscore 실행 (※ ROS 서버 역할; 토픽 통신)
 
 ```
 roscore
 ```
 
-### 로봇 IoT에서 캠 실행 (※ ROS 토픽 통신)
+---
+
+### 로봇 IoT에서 캠 2개 활용 실행 (※ ROS 토픽 통신)
+
+* 전면과 측면 캠을 사용하는 RPi 보드에서 cam_pub_node 실행
 
 ```
 roslaunch cam_pub_node cam_pub_node.launch
 ```
 
+### 로봇 IoT에서 제어 통신 실행 (※ ROS 토픽 통신)
+
+* 사운드 전면과 측면 캠을 사용하는 RPi 보드에서 sound_flask_node 실행
+
+```
+roslaunch sound_flask_node sound_flask_node.launch
+```
+
 ---
 
-### rpc_server 실행 (※ 욜로 결과 값 자바 서버와 통신)
+### 서버에서 rpc_server 실행 (※ 욜로 결과 값 자바 서버와 통신)
 
 ```
 cd rpc_server
