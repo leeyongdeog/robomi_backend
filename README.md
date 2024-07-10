@@ -119,4 +119,13 @@ CREATE TABLE `weights` (
   ※ 실행 시, 패키지 com.robomi.object 의 DetectingObject.java 에서
   하드코딩 주소 변경 필요 가능성 검토
 
+---
+
+### rpc_server 실행 (※ 욜로 결과 값 자바 서버와 통신)
+
+```
+pip3 install thrift
+pip3 install ultralytics
+python3 pyserver.py
+```
 
