@@ -121,12 +121,26 @@ CREATE TABLE `weights` (
 
 ---
 
+### roscore 실행 (※ ROS 서버 역할; 토픽 통신)
+
+```
+roscore
+```
+
+### 로봇 IoT에서 캠 실행 (※ ROS 토픽 통신)
+
+```
+roslaunch cam_pub_node cam_pub_node.launch
+```
+
+---
+
 ### rpc_server 실행 (※ 욜로 결과 값 자바 서버와 통신)
 
 ```
+cd rpc_server
 pip3 install thrift
 pip3 install torch
 pip3 install ultralytics
 python3 pyserver.py
 ```
-
