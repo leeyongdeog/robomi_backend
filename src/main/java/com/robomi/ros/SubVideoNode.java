@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import sensor_msgs.Image;
+import sensor_msgs.CompressedImage;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -81,45 +82,28 @@ public class SubVideoNode extends AbstractNodeMain {
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        final Subscriber<Image> subscriber = connectedNode.newSubscriber(topicName, messageType);
-        subscriber.addMessageListener(new MessageListener<Image>() {
+        final Subscriber<CompressedImage> subscriber = connectedNode.newSubscriber(topicName, messageType);
+        subscriber.addMessageListener(new MessageListener<CompressedImage>() {
             @Override
-            public void onNewMessage(Image image) {
+            public void onNewMessage(CompressedImage image) {
                 long currentTime = System.currentTimeMillis();
                 if(lastExecutionTime == 0) lastExecutionTime = currentTime;
                 if(currentTime - lastExecutionTime >= captureTerm){
                     lastExecutionTime = currentTime;
                     ChannelBuffer buffer = image.getData();
-//                    byte[] imageData = new byte[buffer.readableBytes()];
-//                    buffer.readBytes(imageData);
 
-                    // 남은 데이터의 크기 확인
                     int remainingBytes = buffer.readableBytes();
-
-                    // 남은 데이터 크기만큼의 배열 생성
                     byte[] imageData = new byte[remainingBytes];
-
-                    // 버퍼에서 데이터 읽어오기
                     buffer.readBytes(imageData);
 
-                    int width = image.getWidth();
-                    int height = image.getHeight();
-
-//                    System.out.println("width: "+width+" height: "+height);
-
-                    String encoding = image.getEncoding();
-                    byte[] decodeData = new byte[width * height * 3];
                     try {
-                        byte[] data = image.getData().array();
-                        for (int i = 0; i < width * height; i++) {
-                            byte temp = decodeData[i * 3];
-                            decodeData[i * 3] = data[i * 3 + 2]; // Red
-                            decodeData[i * 3 + 1] = data[i * 3 + 1]; // Green
-                            decodeData[i * 3 + 2] = temp; // Blue
-                        }
+                        ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+                        BufferedImage bufferedImage = ImageIO.read(bais);
 
-                        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-                        bufferedImage.getRaster().setDataElements(0, 0, width, height, decodeData);
+                        if (bufferedImage == null) {
+                            System.out.println("BufferedImage is null. Possibly due to an unsupported format or corrupted data.");
+                            return;
+                        }
 
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         ImageIO.write(bufferedImage, "jpg", baos); // 이미지를 JPEG 형식으로 ByteArrayOutputStream에 쓰기
@@ -129,10 +113,10 @@ public class SubVideoNode extends AbstractNodeMain {
 
                         DetectingObject detect = DetectingObject.getInstance();
 
-                        if(type == "object"){
+                        if (type.equals("object")) {
                             videoDataStore.insertObjQueue(byteArray);
                             detect.updateObject(byteArray, Main.getObjectInfoList());
-                        } else{
+                        } else {
                             videoDataStore.insertRtQueue(byteArray);
                             detect.realtime_camera_check(byteArray);
                         }
@@ -140,6 +124,46 @@ public class SubVideoNode extends AbstractNodeMain {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
+
+//                    int width = image.getWidth();
+//                    int height = image.getHeight();
+//
+////                    System.out.println("width: "+width+" height: "+height);
+//
+//                    String encoding = image.getEncoding();
+//                    byte[] decodeData = new byte[width * height * 3];
+//                    try {
+//                        byte[] data = image.getData().array();
+//                        for (int i = 0; i < width * height; i++) {
+//                            byte temp = decodeData[i * 3];
+//                            decodeData[i * 3] = data[i * 3 + 2]; // Red
+//                            decodeData[i * 3 + 1] = data[i * 3 + 1]; // Green
+//                            decodeData[i * 3 + 2] = temp; // Blue
+//                        }
+//
+//                        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_BGR);
+//                        bufferedImage.getRaster().setDataElements(0, 0, width, height, decodeData);
+//
+//                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//                        ImageIO.write(bufferedImage, "jpg", baos); // 이미지를 JPEG 형식으로 ByteArrayOutputStream에 쓰기
+//                        baos.flush();
+//                        byte[] byteArray = baos.toByteArray(); // ByteArrayOutputStream에서 byte 배열로 변환
+//                        baos.close();
+//
+//                        DetectingObject detect = DetectingObject.getInstance();
+//
+//                        if(type == "object"){
+//                            videoDataStore.insertObjQueue(byteArray);
+//                            detect.updateObject(byteArray, Main.getObjectInfoList());
+//                        } else{
+//                            videoDataStore.insertRtQueue(byteArray);
+//                            detect.realtime_camera_check(byteArray);
+//                        }
+//
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
                 }
             }
         });

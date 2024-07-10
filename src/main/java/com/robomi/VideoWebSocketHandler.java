@@ -50,13 +50,6 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
         sessions.add(session);
         System.out.println("New Video WebSocket connection: " + session.getId());
         cameraStarted[0] = true;
-
-        try{
-            String jsonStr = "{\"name\":"+"\"TEST PUSH\""+", \"status\":"+"\""+"반입물품위반"+"\""+", \"time\":"+System.currentTimeMillis()+"}";
-            MessageWebSocketHandler.getInstance().sendMessage(jsonStr);
-        }catch(Exception e){
-            System.out.println("push message failed");
-        }
     }
 
     @Override
