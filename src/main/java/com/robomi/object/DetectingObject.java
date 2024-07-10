@@ -469,10 +469,10 @@ public class DetectingObject {
     }
 
     private void playSound(){
-        String serverUrl = sound_server_url+"play_audio?file_name=sound.wav";
+        String serverUrl = sound_server_url+"play_audio?file_name=sound.mp3";
 
         // POST 요청 보낼 데이터 설정
-        String audioFilename = "sound.wav";  // 재생할 오디오 파일명
+        String audioFilename = "sound.mp3";  // 재생할 오디오 파일명
         String postData = "audio_filename=" + audioFilename;
 
         try{
