@@ -248,40 +248,19 @@ public class Main {
         List<ObjectDTO> objList = objectService.getAllObjects();
         System.out.println(objList.get(0).getName());
 
-        String resourcePath="imagefolder/";
+        for (ObjectDTO dto : objList) {
+            Mat originalMat = downloadAndReadImage(dto.getImg_path());
+            if (!originalMat.empty()) {
+                ObjectInfo obj = new ObjectInfo();
+                obj.setObjectName(dto.getName());
+                obj.setObjectStatus(OBJECT_STATUS.OK);
+                obj.updateCheckTime(0);
 
-        for(ObjectDTO dto : objList){
-            ObjectInfo obj = new ObjectInfo();
-            obj.setObjectName(dto.getName());
-            obj.setObjectStatus(OBJECT_STATUS.OK);
-            obj.updateCheckTime(0);
-
-            String imageUrl = dto.getImg_path();
-            String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-            String filePath = resourcePath + filename;
-            System.out.println(filePath);
-            try {
-                downloadImageIfNotExists(imageUrl, filePath);
-                Mat imageMat = Imgcodecs.imread(filePath, Imgcodecs.IMREAD_GRAYSCALE);
-
-                if (imageMat.empty()) {
-                    System.out.println("Failed to read image");
-                } else {
-                    MatOfKeyPoint keypoint = new MatOfKeyPoint();
-                    Mat descriptor = new Mat();
-
-                    computeKeypointAndDescriptorBySIFT(imageMat, keypoint, descriptor);
-
-                    obj.addImageMat(imageMat);
-                    obj.addDescriptor(descriptor);
-                    obj.addKeypoint(keypoint);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+                objectInfoList.add(obj);
             }
-
-            objectInfoList.add(obj);
         }
+
+        System.out.println("obj count: "+objectInfoList.size());
     }
 
     private void downloadImageIfNotExists(String imageUrl, String localFilePath) throws IOException {
