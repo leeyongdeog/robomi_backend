@@ -125,6 +125,7 @@ CREATE TABLE `weights` (
 
 ```
 pip3 install thrift
+pip3 install torch
 pip3 install ultralytics
 python3 pyserver.py
 ```
