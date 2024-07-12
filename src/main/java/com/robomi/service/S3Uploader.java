@@ -12,8 +12,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import java.io.IOException;
 
 public class S3Uploader {
-    private static String aws_accessKey = "AKIAZI2LHUUK4ESYOZZH";
-    private static String aws_secretKey = "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";
+    private static String aws_accessKey = "";
+    private static String aws_secretKey = "";
 
     public static void uploadFile(String bucketName, String folderName, String keyName, MultipartFile file){
         Region region = Region.AP_NORTHEAST_2;
